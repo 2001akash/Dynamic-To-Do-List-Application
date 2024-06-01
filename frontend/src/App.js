@@ -9,55 +9,52 @@ const App = () => {
 
     useEffect(() => {
         fetchTasks();
-    }, []);
+    }, [tasks]);
 
-    const fetchTasks = () => {
-        axios.get('http://localhost:5000/tasks')
-            .then(response => {
-                setTasks(response.data);
-            })
-            .catch(error => {
-                console.error('There was an error fetching the tasks!', error);
-            });
+    const fetchTasks = async () => {
+        try {
+            const response = await axios.get('https://backend-todo-ocpp.onrender.com/tasks');
+            setTasks(response.data);
+        } catch (error) {
+            console.error('There was an error fetching the tasks!', error);
+        }
     };
 
-    const addTask = () => {
-        axios.post('http://localhost:5000/tasks/add', newTask)
-            .then((response) => {
-                const newTaskWithDetails = {
-                    ...response.data,
-                    title: newTask.title,
-                    description: newTask.description,
-                    status: 'Pending',
-                };
-                setTasks((prevTasks) => [...prevTasks, newTaskWithDetails]);
-                setNewTask({ title: '', description: '' });
-            })
-            .catch((error) => {
-                console.error('There was an error adding the task!', error);
-            });
+    const addTask = async () => {
+        try {
+            const response = await axios.post('https://backend-todo-ocpp.onrender.com/tasks/add', newTask);
+            const newTaskWithDetails = {
+                ...response.data,
+                title: newTask.title,
+                description: newTask.description,
+                status: 'Pending',
+            };
+            setTasks((prevTasks) => [...prevTasks, newTaskWithDetails]);
+            setNewTask({ title: '', description: '' });
+        } catch (error) {
+            console.error('There was an error adding the task!', error);
+        }
     };
 
-    const moveTask = (id, currentStatus) => {
+    const moveTask = async (id, currentStatus) => {
         const newStatus = currentStatus === 'Pending' ? 'In Progress' : 'Completed';
         const updatedTimestamp = newStatus === 'Completed' ? new Date().getTime() : null;
 
-        axios.post(`http://localhost:5000/tasks/update/${id}`, { status: newStatus })
-            .then(() => {
-                setTasks(tasks.map(task => {
-                    if (task._id === id) {
-                        return {
-                            ...task,
-                            status: newStatus,
-                            timestamp: updatedTimestamp ? updatedTimestamp : task.timestamp
-                        };
-                    }
-                    return task;
-                }));
-            })
-            .catch(error => {
-                console.error('There was an error updating the task!', error);
-            });
+        try {
+          await axios.patch(`https://backend-todo-ocpp.onrender.com/tasks/update/${id}`, { status: newStatus });
+          setTasks(tasks.map(task => {
+                if (task._id === id) {
+                    return {
+                        ...task,
+                        status: newStatus,
+                        timestamp: updatedTimestamp ? updatedTimestamp : task.timestamp
+                    };
+                }
+                return task;
+            }));
+        } catch (error) {
+            console.error('There was an error updating the task!', error);
+        }
     };
 
     return (
@@ -98,4 +95,4 @@ const App = () => {
     );
 };
 
-export default App;
+export default App;

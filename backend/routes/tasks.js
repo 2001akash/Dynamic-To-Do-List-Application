@@ -22,7 +22,7 @@ router.route('/add').post((req, res) => {
 });
 
 // Update task status
-router.route('/update/:id').post((req, res) => {
+router.route('/update/:id').patch((req, res) => {
     Task.findById(req.params.id)
         .then(task => {
             task.status = req.body.status;
